@@ -6,8 +6,9 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace GoCommute;
 
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
 [ApiController]
-[Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
 
@@ -36,8 +37,21 @@ public class AuthController : ControllerBase
         }
 
         [HttpPost("signup")]
-        public async Task<IActionResult> Signup(){
-            return await Task.FromResult(Ok( new { Response = "Hello"}));
+        public async Task<IActionResult> Signup([FromBody] string email){
+            if(String.IsNullOrEmpty(email)) {
+                return BadRequest();
+            }
+
+            //validate if email exist
+
+            //generate AppID
+
+            //generate SecretKey
+
+            //Create User
+
+            return await Task.FromResult(Ok( email ));
+
         }
 
 }

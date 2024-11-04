@@ -3,11 +3,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//Controllers
 builder.Services.AddControllers();
 
+//EF
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDBContext>(options => 
     options.UseSqlServer(connectionString)
@@ -30,6 +33,19 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+//Versioning
+builder.Services.AddApiVersioning(options => {
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.DefaultApiVersion = new ApiVersion(1,0);
+    options.ReportApiVersions = true;
+});
+
+//Repositories
+builder.Services.AddScoped<IRouteRepository, RouteRepository>();
+
+//Services
+builder.Services.AddScoped<RouteService>();
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -48,7 +64,6 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
