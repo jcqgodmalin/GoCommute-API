@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GoCommute.Data;
+using Microsoft.EntityFrameworkCore;
 
-namespace GoCommute;
+namespace GoCommute.Repositories;
 
 
 public interface IRouteRepository {

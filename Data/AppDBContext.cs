@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace GoCommute;
+namespace GoCommute.Data;
 
 public class AppDBContext : DbContext
 {

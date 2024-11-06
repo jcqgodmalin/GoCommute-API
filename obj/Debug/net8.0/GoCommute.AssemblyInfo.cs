@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GoCommute")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6618adcdab1c01a5bdd22a824999667fe144ae89")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+058a47fc27efa4a1a42bbdb4882410a1a6e30d15")]
 [assembly: System.Reflection.AssemblyProductAttribute("GoCommute")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GoCommute")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

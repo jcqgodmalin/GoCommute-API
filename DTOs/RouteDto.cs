@@ -1,4 +1,4 @@
-﻿namespace GoCommute;
+﻿namespace GoCommute.DTOs;
 
 public class RouteDto
 {

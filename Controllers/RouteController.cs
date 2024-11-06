@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using GoCommute.DTOs;
+using GoCommute.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GoCommute;
+namespace GoCommute.Controllers;
 
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
@@ -23,7 +25,7 @@ public class RouteController : ControllerBase
     }
 
     //get routebyid
-    // [Authorize]
+    [Authorize]
     [HttpGet("GetRoute")]
     public async Task<IActionResult> GetRoute(int? id, string? busname = null, string? routenumber = null){
 
@@ -34,7 +36,7 @@ public class RouteController : ControllerBase
         var route = await _routeService.GetRoute(id, busname, routenumber);
 
         if(route == null){
-            return NotFound();
+            return NotFound("Route not found");
         }
 
         return Ok(route);

@@ -1,4 +1,6 @@
-﻿namespace GoCommute;
+﻿using GoCommute.DTOs;
+
+namespace GoCommute.Mappers;
 
 public static class RouteMapper
 {
