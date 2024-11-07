@@ -4,6 +4,7 @@ using GoCommute.Helpers;
 using GoCommute.Mappers;
 using GoCommute.Models;
 using GoCommute.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace GoCommute.Services
 {
@@ -23,32 +24,35 @@ namespace GoCommute.Services
         }
 
         public async Task<List<AppDto>> GetAppsByUserId(int id){
-            var apps = await _appRepository.GetAllAppsByUserId(id);
+            var apps = await _appRepository.GetApp(a => a.UserId == id);
+            if(apps.Count < 1){
+                return new List<AppDto>();
+            }
             return apps.Select(AppMapper.EntityToAppDto).ToList();
         }
 
         public async Task<AppDto?> GetAppByUserId(int UserId, string appName){
-            var app = await _appRepository.GetAppByUserId(UserId, appName);
-            if(app == null){
+            var app = await _appRepository.GetApp(a => a.UserId == UserId && a.Name == appName);
+            if(app.Count < 1){
                 return null;
             }
-            return AppMapper.EntityToAppDto(app);
+            return AppMapper.EntityToAppDto(app.ElementAt(0));
         }
 
         public async Task<AppDto?> GetAppByID(int id){
-            var app = await _appRepository.GetAppByID(id);
-            if(app == null){
+            var app = await _appRepository.GetApp(a => a.Id == id);
+            if(app.Count < 1){
                 return null;
             }
-            return AppMapper.EntityToAppDto(app);
+            return AppMapper.EntityToAppDto(app.ElementAt(0));
         }
 
         public async Task<AppDto?> GetAppByAppID(string AppID){
-            var app = await _appRepository.GetAppByAppID(AppID);
-            if(app == null){
+            var app = await _appRepository.GetApp(a => a.AppID == AppID);
+            if(app.Count < 1){
                 return null;
             }
-            return AppMapper.EntityToAppDto(app);
+            return AppMapper.EntityToAppDto(app.ElementAt(0));
         }
 
         public async Task<AppDto> AddApp(NewAppDto newAppDto){
@@ -60,8 +64,8 @@ namespace GoCommute.Services
             }
 
             //check if app is existing
-            var existingApp = await _appRepository.GetAppByUserId(newAppDto.UserId, newAppDto.Name);
-            if(existingApp != null){
+            var existingApp = await _appRepository.GetApp(a => a.UserId == user.Id && a.Name == newAppDto.Name);
+            if(existingApp.Count > 0){
                 throw new Exception("App Name already exist for this user");
             }
 
@@ -95,12 +99,14 @@ namespace GoCommute.Services
                 throw new Exception("AppID and SecretKey cannot be empty");
             }
 
-            //get the app based on the provided AppID
-            var app = await _appRepository.GetAppByAppID(appGenerateTokenDto.AppID);
+            //get the app based on the provided AppID and SecretKey
+            var appList = await _appRepository.GetApp(a => a.AppID == appGenerateTokenDto.AppID && a.SecretKey == appGenerateTokenDto.SecretKey);
 
-            if(app == null){
+            if(appList.Count < 1){
                 throw new Exception("App with the provided AppID and SecretKey cannot be found");
             }
+
+            var app = appList.ElementAt(0);
 
             var atrt = new AppRefreshTokenDto();
             atrt.AccessToken = SecurityHelper.GenerateToken(AppMapper.EntityToAppDto(app));
@@ -123,11 +129,13 @@ namespace GoCommute.Services
         public async Task<AppRefreshTokenDto> RefreshToken(AppRefreshTokenDto appRefreshTokenDto){
 
             //validate if there is an app with the provided refreshToken
-            var app = _appRepository.GetApp(a => a.RefreshToken == appRefreshTokenDto.RefreshToken)?.FirstOrDefault();
+            var appList = await _appRepository.GetApp(a => a.RefreshToken == appRefreshTokenDto.RefreshToken);
 
-            if(app == null){
+            if(appList.Count < 1){
                 throw new Exception("Refresh Token is invalid");
             }
+
+            var app = appList.ElementAt(0);
 
             //get the principal of the expired token
             var principal = SecurityHelper.GetPrincipalFromExpiredToken(appRefreshTokenDto.AccessToken,app.SecretKey);

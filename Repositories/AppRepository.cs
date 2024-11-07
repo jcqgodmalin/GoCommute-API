@@ -8,11 +8,7 @@ namespace GoCommute.Repositories
 
     public interface IAppRepository {
         Task<List<App>> GetAllApps();
-        Task<List<App>> GetAllAppsByUserId(int id);
-        Task<App?> GetAppByUserId(int UserId, string appName);
-        Task<App?> GetAppByID(int id);
-        Task<App?> GetAppByAppID(string AppID);
-        IQueryable<App>? GetApp(Expression<Func<App,bool>> filter);
+        Task<List<App>> GetApp(Expression<Func<App,bool>> filter);
         Task AddApp(App app);
         Task<bool> UpdateApp(App app);
         Task<bool> DeleteApp(int id);
@@ -37,71 +33,11 @@ namespace GoCommute.Repositories
             }
         }
 
-        public async Task<List<App>> GetAllAppsByUserId(int id)
-        {
-            if(id < 1){
-                return new List<App>();
-            }
-
+        public Task<List<App>> GetApp(Expression<Func<App,bool>> filter){
             try{
-                return await _context.Apps
-                    .AsNoTracking()
-                    .Where(a => a.UserId == id)
-                    .ToListAsync();
+                return _context.Apps.Where(filter).ToListAsync();
             }catch(Exception){
-                return new List<App>();
-            }
-        }
-
-        public async Task<App?> GetAppByUserId(int UserId, string appName){
-            if(UserId < 1 || string.IsNullOrEmpty(appName)){
-                return null;
-            }
-
-            try{
-                var app = await _context.Apps
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(a => a.UserId == UserId && a.Name == appName);
-                return app;
-            }catch(Exception){
-                return null;
-            }
-        }
-
-        public async Task<App?> GetAppByAppID(string AppID)
-        {
-            if(string.IsNullOrEmpty(AppID)){
-                return null;
-            }
-            
-            try{
-                var app = await _context.Apps
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(a => a.AppID == AppID);
-                return app;
-            }catch(Exception){
-                return null;
-            }
-        }
-
-        public async Task<App?> GetAppByID(int id)
-        {
-            if(id < 1){
-                return null;
-            }
-            
-            var app = await _context.Apps
-                .FindAsync(id);
-
-            return app;
-        }
-
-        public IQueryable<App>? GetApp(Expression<Func<App,bool>> filter){
-            try{
-                var app = _context.Apps.Where(filter);
-                return app;
-            }catch(Exception){
-                return null;
+                return Task.FromResult(new List<App>());
             }
         }
 
