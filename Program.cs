@@ -23,6 +23,7 @@ builder.Services.AddScoped<IRouteRepository, RouteRepository>();
 
 //Services
 builder.Services.AddScoped<RouteService>();
+builder.Services.AddScoped<CommuteService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AppService>();
 
