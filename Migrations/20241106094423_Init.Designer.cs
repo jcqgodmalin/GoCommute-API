@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GoCommute.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    [Migration("20241105063420_Init")]
+    [Migration("20241106094423_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -51,6 +51,50 @@ namespace GoCommute.Migrations
                     b.HasIndex("RouteId");
 
                     b.ToTable("Markers");
+                });
+
+            modelBuilder.Entity("GoCommute.Models.App", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AppID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Created_At")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RefreshToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SecretKey")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("Updated_At")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Apps");
                 });
 
             modelBuilder.Entity("GoCommute.Route", b =>
@@ -125,9 +169,6 @@ namespace GoCommute.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AppID")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("Created_At")
                         .HasColumnType("datetime2");
 
@@ -141,9 +182,6 @@ namespace GoCommute.Migrations
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SecretKey")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("Updated_At")
@@ -165,6 +203,17 @@ namespace GoCommute.Migrations
                     b.Navigation("Route");
                 });
 
+            modelBuilder.Entity("GoCommute.Models.App", b =>
+                {
+                    b.HasOne("GoCommute.User", "User")
+                        .WithMany("Apps")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("GoCommute.RoutePoint", b =>
                 {
                     b.HasOne("GoCommute.Route", "Route")
@@ -181,6 +230,11 @@ namespace GoCommute.Migrations
                     b.Navigation("Markers");
 
                     b.Navigation("RoutePoints");
+                });
+
+            modelBuilder.Entity("GoCommute.User", b =>
+                {
+                    b.Navigation("Apps");
                 });
 #pragma warning restore 612, 618
         }

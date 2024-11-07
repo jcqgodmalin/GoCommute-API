@@ -7,15 +7,15 @@ namespace GoCommute.Services
     public class UserService
     {
 
-        private readonly IUserReporitory _userRepository;
+        private readonly IUserRepository _userRepository;
 
-        public UserService(IUserReporitory userReporitory)
+        public UserService(IUserRepository userRepository)
         {
-            _userRepository = userReporitory;
+            _userRepository = userRepository;
         }
 
-        public async Task<UserDto?> GetUser(int? id = null, string? email = null, string? appid = null, string? secretkey = null){
-            var user = await _userRepository.GetUser(id, email, appid, secretkey);
+        public async Task<UserDto?> GetUser(int? id = null, string? email = null){
+            var user = await _userRepository.GetUser(id, email);
             if(user != null){
                 return UserMapper.EntityToUserDto(user);
             }
@@ -28,12 +28,12 @@ namespace GoCommute.Services
             return UserMapper.EntityToUserDto(user);
         }
 
-        public async Task<string?> GetSecretKey(string AppID){
-            var secretKey = await _userRepository.GetSecretKeyByAppID(AppID);
-            if(secretKey != null){
-                return secretKey;
-            }
-            return null;
-        }
+        // public async Task<string?> GetSecretKey(string AppID){
+        //     var secretKey = await _userRepository.GetSecretKeyByAppID(AppID);
+        //     if(secretKey != null){
+        //         return secretKey;
+        //     }
+        //     return null;
+        // }
     }
 }

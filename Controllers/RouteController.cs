@@ -25,7 +25,7 @@ public class RouteController : ControllerBase
     }
 
     //get routebyid
-    [Authorize]
+    [Authorize(Roles = "Route")]
     [HttpGet("GetRoute")]
     public async Task<IActionResult> GetRoute(int? id, string? busname = null, string? routenumber = null){
 
@@ -49,7 +49,7 @@ public class RouteController : ControllerBase
     //get routebybusname
 
     //add route
-    [Authorize]
+    [Authorize(Roles = "Route")]
     [HttpPost]
     public async Task<IActionResult> AddRoute([FromBody] RouteDto routeDto){
 

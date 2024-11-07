@@ -9,8 +9,7 @@ namespace GoCommute.Mappers
                 Id = user.Id,
                 Email = user.Email,
                 Password = user.Password,
-                AppID = user.AppID,
-                SecretKey = user.SecretKey,
+                Apps = user.Apps,
                 Role = user.Role,
                 Created_At = user.Created_At,
                 Updated_At = user.Updated_At
@@ -22,8 +21,7 @@ namespace GoCommute.Mappers
                 Id = userDto.Id,
                 Email = userDto.Email,
                 Password = userDto.Password,
-                AppID = userDto.AppID,
-                SecretKey = userDto.SecretKey,
+                Apps = userDto.Apps,
                 Role = userDto.Role,
                 Created_At = userDto.Created_At,
                 Updated_At = userDto.Updated_At

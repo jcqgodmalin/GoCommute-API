@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 using System.Text;
 using GoCommute.DTOs;
+using Microsoft.AspNetCore.Identity;
 
 namespace GoCommute.Helpers;
 
@@ -60,24 +61,54 @@ public static class SecurityHelper
         return secretKey.ToString();
     }
 
-    public static string GenerateToken(UserDto user){
+    public static string GenerateToken(AppDto appDto){
+
         var TokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(user.SecretKey!);
+        
+        var key = Encoding.ASCII.GetBytes(appDto.SecretKey);
+
+        var claims = new List<Claim> {
+            new Claim("AppID", appDto.AppID)
+        };
+
+        foreach(var role in appDto.Role){
+            claims.Add(new Claim(ClaimTypes.Role,role));
+        }
+        
         var tokenDescriptor = new SecurityTokenDescriptor{
-            Subject = new ClaimsIdentity(new Claim[]
-            {
-                new Claim("AppID", user.AppID),
-                new Claim(ClaimTypes.Role, user.Role!)
-            }),
+            Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddHours(1),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
         };
 
-        Console.WriteLine($"Generating token for AppID: {user.AppID}"); // Debugging output
+        Console.WriteLine($"Generating token for AppID: {appDto.AppID}"); // Debugging output
         var token = TokenHandler.CreateToken(tokenDescriptor);
         var tokenString = TokenHandler.WriteToken(token);
         Console.WriteLine($"Generated Token: {tokenString}");
         return tokenString;
+    }
+
+    public static ClaimsPrincipal? GetPrincipalFromExpiredToken(string token, string key)
+    {
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = false,
+            ValidateIssuer = false,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+            ValidateLifetime = false
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
+
+        if (securityToken is JwtSecurityToken jwtSecurityToken &&
+            jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+        {
+            return principal;
+        }
+
+        return null;
     }
 
 }

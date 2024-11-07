@@ -19,62 +19,62 @@ public class AuthController : ControllerBase
         _userService = userService;
     }
 
-    [HttpPost("generate-token")]
-    public async Task<IActionResult> GenerateToken([FromBody] UserDto userDto){
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] UserLoginDto userLoginDto ){
 
-        //get user based on the app id and client secret
-        if(userDto.AppID == null && userDto.SecretKey == null){
-            return BadRequest("AppID and SecretKey cannot be empty");
+        if(String.IsNullOrEmpty(userLoginDto.Email) || String.IsNullOrEmpty(userLoginDto.Password)) {
+            return BadRequest();
         }
 
-        var user = await _userService.GetUser(null,null,userDto.AppID,userDto.SecretKey);
+        //try to get the user
+        var userFromDB = await _userService.GetUser(null, userLoginDto.Email);
 
-        if(user == null){
-            return NotFound("Client with the provided AppID and SecretKey cannot be found");
+        if(userFromDB == null){
+            return NotFound($"User with Email {userLoginDto.Email} was not found");
         }
 
-        userDto.Role = user.Role;
+        //if user is found, compare password
+        if(SecurityHelper.PasswordVerify(userLoginDto.Password,userFromDB.Password)){
+            return Ok();
+        }else{
+            return BadRequest($"Password is incorrect");
+        }
 
-        //if client exists, generate token
-        Console.WriteLine($"UserDto AppID: {userDto.AppID}");
-        Console.WriteLine($"UserDto Role: {userDto.Role}");
-        var token = SecurityHelper.GenerateToken(userDto);
-
-        return Ok(new {token = token});
     }
 
     [HttpPost("signup")]
-    public async Task<IActionResult> Signup([FromBody] UserDto userDto){
+    public async Task<IActionResult> Signup([FromBody] UserSignupDto userSignupDto){
 
-        if(String.IsNullOrEmpty(userDto.Email) || String.IsNullOrEmpty(userDto.Password)) {
+        if(String.IsNullOrEmpty(userSignupDto.Email) || String.IsNullOrEmpty(userSignupDto.Password)) {
             return BadRequest();
         }
 
         //validate if email exist
-        var userFromDB = await _userService.GetUser(null,userDto.Email);
+        var userFromDB = await _userService.GetUser(null,userSignupDto.Email);
         if(userFromDB != null){
             return BadRequest("Email already exists");
         }
-        
-        //assign role as User
-        userDto.Role = "User";
 
-        //password hashing
-        userDto.Password = SecurityHelper.PasswordHash(userDto.Password);
+        //if user is not found. Create a new user and set the appropriate values
 
-        //generate AppID
-        userDto.AppID = SecurityHelper.GenerateAppID();
+        var user = new UserDto();
 
-        //generate SecretKey
-        userDto.SecretKey = SecurityHelper.GenerateSecretKey();
+        //created now
+        user.Created_At = DateTime.Now;
 
-        //assign created at
-        userDto.Created_At = DateTime.Now;
+        //email
+        user.Email = userSignupDto.Email;
 
-        //Create User
-        var createdUser = await _userService.AddUser(userDto);
+        //password
+        user.Password = SecurityHelper.PasswordHash(userSignupDto.Password);
 
-        return CreatedAtAction(nameof(GetUser),new {id = createdUser.Id}, createdUser);
+        //set the initial role to User
+        user.Role.Add("User");
+
+        //save the user
+        var userCreated = await _userService.AddUser(user);
+
+        return CreatedAtAction(nameof(GetUser), new {Id = userCreated.Id}, userCreated);
 
     }
 

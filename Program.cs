@@ -17,12 +17,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 //Repositories
-builder.Services.AddScoped<IUserReporitory, UserRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAppRepository, AppRepository>();
 builder.Services.AddScoped<IRouteRepository, RouteRepository>();
 
 //Services
 builder.Services.AddScoped<RouteService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<AppService>();
 
 //EF
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -32,7 +34,7 @@ builder.Services.AddDbContext<AppDBContext>(options =>
 
 
 //JWT
-UserService _userService = builder.Services.BuildServiceProvider().GetRequiredService<UserService>();
+//UserService _userService = builder.Services.BuildServiceProvider().GetRequiredService<UserService>();
 builder.Services.AddAuthentication(options => 
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -61,9 +63,9 @@ builder.Services.AddAuthentication(options =>
                 return;
             }
 
-            var userService = context.HttpContext.RequestServices.GetRequiredService<UserService>();
-            var secretKey = await userService.GetSecretKey(appIdClaim);
-            if (string.IsNullOrEmpty(secretKey))
+            var appService = context.HttpContext.RequestServices.GetRequiredService<AppService>();
+            var app = await appService.GetAppByAppID(appIdClaim);
+            if (string.IsNullOrEmpty(app.SecretKey))
             {
                 context.Fail("Invalid AppID or SecretKey not found.");
                 return;
@@ -73,7 +75,7 @@ builder.Services.AddAuthentication(options =>
             var validationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(app.SecretKey)),
                 ValidateIssuer = false,
                 ValidateAudience = false,
                 ValidateLifetime = true,
